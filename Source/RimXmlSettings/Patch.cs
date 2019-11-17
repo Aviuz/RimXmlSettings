@@ -13,11 +13,13 @@ namespace RimXmlSettings
 
         private PatchOperation disabled;
 
+        private string modKey;
+
         private string settingKey;
 
         protected override bool ApplyWorker(XmlDocument xml)
         {
-            if (SettingsManager.Settings[settingKey] == true)
+            if (Settings.Default.GetToggleValue(modKey, settingKey) == true)
             {
                 if (this.enabled != null)
                 {

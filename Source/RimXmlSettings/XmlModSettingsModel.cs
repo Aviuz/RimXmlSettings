@@ -5,18 +5,25 @@ using System.Text;
 
 namespace RimXmlSettings
 {
-    internal class XmlModSettingsModel 
+    internal class ToggleProperty
     {
-        internal class  ToggleProperty
-        {
-            public string Key;
-            public bool Value;
-        }
+        public string Key;
+        public bool Value;
+    }
 
-        public Version XmlSettingsVersion = new Version("0.0.0");
+    internal class ModSettings
+    {
+        public string ModKey;
 
         public Version ModVersion = new Version("0.0.0");
 
-        public ICollection<ToggleProperty> ToggleProperties = new List<ToggleProperty>();
+        public List<ToggleProperty> ToggleProperties = new List<ToggleProperty>();
+    }
+
+    internal class XmlModSettingsModel
+    {
+        public Version XmlSettingsVersion = new Version("0.0.0");
+
+        public List<ModSettings> Mods = new List<ModSettings>();
     }
 }

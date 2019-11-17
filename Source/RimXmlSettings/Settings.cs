@@ -11,6 +11,7 @@ namespace RimXmlSettings
     public class Settings
     {
         private string prefsFilePath;
+        private static Settings defaultSettings;
 
         public Settings(string prefsFilePath)
         {
@@ -18,30 +19,63 @@ namespace RimXmlSettings
             Model = new XmlModSettingsModel();
         }
 
-        public bool? this[string key]
+        public static Settings Default
         {
             get
             {
-                if (!Model.ToggleProperties.Any(p => p.Key == key))
-                    return null;
-                else
-                    return Model.ToggleProperties.Single(p => p.Key == key).Value;
+                if (defaultSettings == null)
+                    defaultSettings = new Settings(Path.Combine(GenFilePaths.ConfigFolderPath, "XmlModSettings.xml"));
+
+                return defaultSettings;
             }
-            set
+        }
+
+        private RimXmlSettings.ModSettings this[string key]
+        {
+            get
             {
-                if (value.HasValue)
+                if (key == null)
+                    throw new NullReferenceException();
+
+                var modSettings = Model.Mods.SingleOrDefault(m=>m.ModKey == key);
+                
+                if(modSettings == null)
                 {
-                    if (!Model.ToggleProperties.Any(p => p.Key == key))
-                        Model.ToggleProperties.Add(new XmlModSettingsModel.ToggleProperty() { Key = key, Value = value.Value });
-                    else
-                        Model.ToggleProperties.Single(p => p.Key == key).Value = value.Value;
+                    modSettings = new RimXmlSettings.ModSettings();
+                    Model.Mods.Add(modSettings);
+                }
+
+                return modSettings;
+            }
+        }
+
+        public bool? GetToggleValue(string modName, string key)
+        {
+            if (!this[modName].ToggleProperties.Any(p => p.Key == key))
+                return null;
+            else
+                return this[modName].ToggleProperties.Single(p => p.Key == key).Value;
+        }
+
+        public void SetToggleValue(string modName, string key, bool? value)
+        {
+            if (value.HasValue)
+            {
+                if (!this[modName].ToggleProperties.Any(p => p.Key == key))
+                {
+                    this[modName].ToggleProperties.Add(new RimXmlSettings.ToggleProperty() { Key = key, Value = value.Value });
                 }
                 else
                 {
-                    var item = Model.ToggleProperties.SingleOrDefault(p => p.Key == key);
-                    if (item != null)
-                        Model.ToggleProperties.Remove(item);
+
+                    this[modName].ToggleProperties.Single(p => p.Key == key).Value = value.Value;
                 }
+            }
+            else
+            {
+                var item = this[modName].ToggleProperties.SingleOrDefault(p => p.Key == key);
+                if (item != null)
+                    this[modName].ToggleProperties.Remove(item);
             }
         }
 
@@ -57,7 +91,6 @@ namespace RimXmlSettings
                 }
                 catch (Exception ex)
                 {
-                    //throw ex;
                     Log.Message($"RimXmlSettings occured error, loading default settings: {ex.ToString()}");
                     Model = new XmlModSettingsModel();
                 }
