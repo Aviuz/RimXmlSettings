@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29503.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RimXmlSettings", "RimXmlSettings\RimXmlSettings.csproj", "{99DF20CC-F632-4850-812C-2A6CB882BE3A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{99DF20CC-F632-4850-812C-2A6CB882BE3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99DF20CC-F632-4850-812C-2A6CB882BE3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99DF20CC-F632-4850-812C-2A6CB882BE3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99DF20CC-F632-4850-812C-2A6CB882BE3A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8FBCD60E-ACFC-4B79-BA37-7690EDBCDC28}
+	EndGlobalSection
+EndGlobal
