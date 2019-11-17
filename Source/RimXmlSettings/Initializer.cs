@@ -11,7 +11,7 @@ namespace RimXmlSettings
     {
         static Initializer()
         {
-
+            //SettingsManager.Settings.Init();
         }
     }
 }
