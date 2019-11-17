@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/Aviuz/RimXmlSettings/master/Images/Logo.png" alt="Prison Labor" />
+    <img src="https://raw.githubusercontent.com/Aviuz/RimXmlSettings/master/Images/Logo.png" alt="Rim XML Settings" />
 </p>
 <p align="center">
   <a href="https://github.com/Aviuz/RimXmlSettings/releases">
