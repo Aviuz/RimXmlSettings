@@ -1,13 +1,14 @@
-﻿using System;
+﻿using RimXmlSettings.Elements;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using Verse;
 
-namespace RimXmlSettings
+namespace RimXmlSettings.Patches
 {
-    public class SettingsPatch : PatchOperation
+    public class RimXmlIfEnabledPatch : PatchOperation
     {
         private PatchOperation enabled;
 
@@ -19,7 +20,7 @@ namespace RimXmlSettings
 
         protected override bool ApplyWorker(XmlDocument xml)
         {
-            if (Settings.Default.GetToggleValue(modKey, settingKey) == true)
+            if (XmlSettings.GetProperty<ToggleProperty>(modKey, settingKey)?.Value == true)
             {
                 if (this.enabled != null)
                 {
