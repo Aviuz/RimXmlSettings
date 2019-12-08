@@ -65,11 +65,6 @@ namespace RimXmlSettings
                 doc.Load(textReader);
                 var rootElement = doc.DocumentElement;
 
-                // Version
-                // Mod Settings
-                //      Version
-                //      Properties : SettingsProperty
-                //          SpecificProperty : ex. ToggleProperty
                 if (rootElement.Name != "RimXmlSettings")
                     throw new Exception("Invalid root element");
 
@@ -82,19 +77,9 @@ namespace RimXmlSettings
                 var modSettingsNode = rootElement["ModSettings"];
                 foreach (XmlElement modNode in modSettingsNode.ChildNodes)
                 {
-                    var modSettings = new XmlModSettings();
+                    var modSettings = DeserializeModSettingsCore(modNode);
 
-                    if (modNode.Name != "Mod")
-                        throw new Exception("Invalid node under ModSettings");
-                    var key = modNode.GetAttribute("Key");
-
-                    var propertiesNode = modNode["Properties"];
-                    foreach (XmlElement item in propertiesNode.ChildNodes)
-                    {
-                        modSettings.Properties.Add(item.GetAttribute("Key"), ReadPropertyFromNode(item));
-                    }
-
-                    xmlSettings.ModSettings.Add(key, modSettings);
+                    xmlSettings.ModSettings.Add(modNode.GetAttribute("Key"), modSettings);
                 }
 
                 return xmlSettings;
@@ -105,13 +90,49 @@ namespace RimXmlSettings
             }
         }
 
+        public static XmlModSettings DeserializeModSettings(TextReader textReader)
+        {
+            try
+            {
+                var doc = new XmlDocument();
+                doc.Load(textReader);
+                var rootElement = doc.DocumentElement;
+
+                if (rootElement.Name != "ModSettings")
+                    throw new Exception("Invalid root element");
+
+                var modSettings = DeserializeModSettingsCore(rootElement);
+
+                return modSettings;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Coulnd't deserialize ModSettings", ex);
+            }
+        }
+
+        private static XmlModSettings DeserializeModSettingsCore(XmlElement modNode)
+        {
+            var modSettings = new XmlModSettings();
+
+            if (modNode.Name != "Mod")
+                throw new Exception("Invalid node under ModSettings");
+
+            var propertiesNode = modNode["Properties"];
+            foreach (XmlElement item in propertiesNode.ChildNodes)
+            {
+                modSettings.Properties.Add(item.GetAttribute("Key"), ReadPropertyFromNode(item));
+            }
+
+            return modSettings;
+        }
+
         private static void AddPropertyNode(XmlDocument doc, XmlElement parentNode, SettingsProperty property, string key)
         {
             var propertyNode = doc.CreateElement("Property");
 
-            var keyAttr = doc.CreateAttribute("Key");
-            keyAttr.Value = key;
-            propertyNode.Attributes.Append(keyAttr);
+            propertyNode.SetAttribute("Key", key);
+            propertyNode.SetAttribute("Type", property.GetType().FullName);
 
             const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.SetProperty;
             foreach (var prop in property.GetType().GetProperties(flags))
@@ -128,9 +149,26 @@ namespace RimXmlSettings
 
         private static SettingsProperty ReadPropertyFromNode(XmlElement xmlElement)
         {
+            var propertyType = Assembly.GetExecutingAssembly().GetType(xmlElement.GetAttribute("Type"));
 
+            var ctor = propertyType.GetConstructor(new Type[] { });
+            var property = (SettingsProperty)ctor.Invoke(new object[] { }) ;
 
-            return null;
+            const BindingFlags propFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.GetProperty;
+            foreach(var prop in propertyType.GetProperties(propFlags))
+            {
+                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string))
+                {
+                    var value = Convert.ChangeType(xmlElement[prop.Name].InnerText, prop.PropertyType);
+                    prop.SetValue(property, value, new object[] { });
+                }
+                else
+                {
+                    throw new ArgumentException("Cannot deserialize object with non-primitive properties");
+                }
+            }
+
+            return property;
         }
     }
 }

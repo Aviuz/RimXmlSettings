@@ -1,6 +1,9 @@
 ﻿using RimXmlSettings.Elements;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Xml;
 using Verse;
 
 namespace RimXmlSettings
@@ -11,63 +14,75 @@ namespace RimXmlSettings
 
         public static XmlSettings LoadUserSettings()
         {
-            // TODO Implement LoadUserSettings()
-            //if (File.Exists(prefsFilePath))
-            //{
-            //    try
-            //    {
-            //        Model = DirectXmlLoader.ItemFromXmlFile<XmlModSettingsModel>(prefsFilePath, true);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        Log.Message($"RimXmlSettings occured error, loading default settings: {ex.ToString()}");
-            //        Model = new XmlModSettingsModel();
-            //    }
-            //}
+            if (File.Exists(UserSettingsLocation))
+            {
+                try
+                {
+                    using (var fileReader = File.OpenText(UserSettingsLocation))
+                    {
+                        return XmlSettingsSerializer.Deserialize(fileReader);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Message($"RimXmlSettings occured error, loading default settings: {ex.ToString()}");
+                    return DefaultUserSettings();
+                }
+            }
+            else
+            {
+                return DefaultUserSettings();
+            }
+        }
 
-            throw new NotImplementedException();
+        private static XmlSettings DefaultUserSettings()
+        {
+            return new XmlSettings();
+
         }
 
         public static void SaveUserSettings(XmlSettings settings)
         {
-            // TODO Implement SaveUserSettings(XmlSettings settings)
-            //try
-            //{
-            //    var xDocument = new XDocument();
-            //    var content = DirectXmlSaver.XElementFromObject(Model, typeof(XmlModSettingsModel));
-            //    xDocument.Add(content);
-            //    xDocument.Save(prefsFilePath);
-            //}
-            //catch (Exception ex)
-            //{
-            //    GenUI.ErrorDialog("ProblemSavingFile".Translate(prefsFilePath, ex.ToString()));
-            //    Log.Error("Exception saving prefs: " + ex);
-            //}
-
-            throw new NotImplementedException();
+            try
+            {
+                using (var fileStream = File.OpenWrite(UserSettingsLocation))
+                using (var textWriter = new StreamWriter(fileStream))
+                {
+                    settings.Serialize(textWriter);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Exception saving prefs: " + ex);
+            }
         }
 
         public static XmlSettings LoadDefaultSettings()
         {
-            // TODO Implement LoadDefaultSettings()
-            //var settingsXmls = new List<LoadableXmlAsset>();
+            var xmlSettings = new XmlSettings();
 
-            //foreach (ModContentPack modContentPack in LoadedModManager.RunningMods)
-            //{
-            //    settingsXmls.AddRange(DirectXmlLoader.XmlAssetsInModFolder(modContentPack, "XmlSettings/")
-            //        .ToList());
-            //}
+            var settingsXmls = new List<LoadableXmlAsset>();
 
-            //foreach (var asset in settingsXmls)
-            //{
-            //    var modDefaults = asset.ChangeType<XmlModDefaultValues>();
+            foreach (ModContentPack modContentPack in LoadedModManager.RunningMods)
+            {
+                settingsXmls.AddRange(DirectXmlLoader.XmlAssetsInModFolder(modContentPack, "XmlSettings/")
+                    .ToList());
+            }
 
-            //    Settings.Default.InitializeFromXml(asset.mod, asset);
+            foreach (var asset in settingsXmls)
+            {
+                string modName;
+                XmlModSettings modSettings;
 
-            //    Settings.Default.SetToggleValue(asset.mod.Identifier, null, null);
-            //}
+                modName = asset.mod.Identifier;
+                using (var reader = File.OpenText(asset.FullFilePath))
+                {
+                    modSettings = XmlSettingsSerializer.DeserializeModSettings(reader);
+                }
+                xmlSettings.ModSettings[modName] = modSettings;
+            }
 
-            throw new NotImplementedException();
+            return xmlSettings;
         }
     }
 }
