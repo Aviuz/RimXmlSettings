@@ -12,7 +12,7 @@ namespace RimXmlSettings
     {
         public static readonly string UserSettingsLocation = Path.Combine(GenFilePaths.ConfigFolderPath, "XmlModSettings.xml");
 
-        public static XmlSettings LoadUserSettings()
+        public static PersistentXmlSettings LoadUserSettings()
         {
             if (File.Exists(UserSettingsLocation))
             {
@@ -35,13 +35,13 @@ namespace RimXmlSettings
             }
         }
 
-        private static XmlSettings DefaultUserSettings()
+        private static PersistentXmlSettings DefaultUserSettings()
         {
-            return new XmlSettings();
+            return new PersistentXmlSettings();
 
         }
 
-        public static void SaveUserSettings(XmlSettings settings)
+        public static void SaveUserSettings(PersistentXmlSettings settings)
         {
             try
             {
@@ -57,9 +57,9 @@ namespace RimXmlSettings
             }
         }
 
-        public static XmlSettings LoadDefaultSettings()
+        public static PersistentXmlSettings LoadDefaultSettings()
         {
-            var xmlSettings = new XmlSettings();
+            var xmlSettings = new PersistentXmlSettings();
 
             var settingsXmls = new List<LoadableXmlAsset>();
 

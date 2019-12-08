@@ -20,7 +20,22 @@ namespace RimXmlSettings.Patches
 
         protected override bool ApplyWorker(XmlDocument xml)
         {
-            if (XmlSettings.GetProperty<ToggleProperty>(modKey, settingKey)?.Value == true)
+            bool value;
+            string valueString = RimXml.Settings.GetValue(modKey, settingKey);
+
+            if (valueString == null)
+            {
+                Log.Error($"There is no key {modKey} in settings");
+                return false;
+            }
+
+            if (!bool.TryParse(valueString, out value))
+            {
+                Log.Error($"Property {modKey} couldn't be parsed. Available values: {bool.TrueString}, {bool.FalseString}");
+                return false;
+            }
+
+            if (value == true)
             {
                 if (this.enabled != null)
                 {

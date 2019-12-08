@@ -55,10 +55,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Elements\IXmlSettings.cs" />
     <Compile Include="Elements\XmlModSettings.cs" />
     <Compile Include="Elements\SettingsProperty.cs" />
-    <Compile Include="Elements\ToggleProperty.cs" />
-    <Compile Include="Elements\XmlSettings.cs" />
+    <Compile Include="Elements\PersistentXmlSettings.cs" />
+    <Compile Include="Elements\XmlSettingsProxy.cs" />
+    <Compile Include="RimXml.cs" />
     <Compile Include="XmlSettingsManager.cs" />
     <Compile Include="XmlSettingsSerializer.cs" />
     <Compile Include="Initializer.cs" />

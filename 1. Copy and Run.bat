@@ -13,6 +13,10 @@ mkdir "%target_directory%"
 mkdir "%target_directory%\About"
 xcopy "About\*.*" "%target_directory%\About" /e
 
+:: XmlSettings
+mkdir "%target_directory%\XmlSettings"
+xcopy "XmlSettings\*.*" "%target_directory%\XmlSettings" /e
+
 :: Assemblies
 mkdir "%target_directory%\Assemblies"
 xcopy "Assemblies\*.*" "%target_directory%\Assemblies" /e

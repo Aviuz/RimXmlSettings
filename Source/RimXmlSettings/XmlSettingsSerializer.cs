@@ -8,7 +8,7 @@ namespace RimXmlSettings
 {
     public static class XmlSettingsSerializer
     {
-        public static void Serialize(this XmlSettings settings, TextWriter textWriter)
+        public static void Serialize(this PersistentXmlSettings settings, TextWriter textWriter)
         {
             try
             {
@@ -18,17 +18,15 @@ namespace RimXmlSettings
 
                 var settingsVersionNode = doc.CreateElement("SettingsVersion");
                 settingsVersionNode.InnerText = settings.XmlSettingsVersion.ToString();
-                doc.AppendChild(settingsVersionNode);
+                rootElement.AppendChild(settingsVersionNode);
 
                 var modSettingsNode = doc.CreateElement("ModSettings");
                 foreach (var modKey in settings.ModSettings.Keys)
                 {
                     var modSettings = settings.ModSettings[modKey];
-                    var modNode = doc.CreateElement("Mod");
+                    var modNode = doc.CreateElement("ModSettings");
 
-                    var keyAttr = doc.CreateAttribute("Key");
-                    keyAttr.Value = modKey;
-                    modNode.Attributes.Append(keyAttr);
+                    modNode.SetAttribute("Key", modKey);
 
                     var versionNode = doc.CreateElement("Version");
                     versionNode.InnerText = modSettings.ModVersion.ToString();
@@ -43,7 +41,7 @@ namespace RimXmlSettings
 
                     modSettingsNode.AppendChild(modNode);
                 }
-                doc.AppendChild(modSettingsNode);
+                rootElement.AppendChild(modSettingsNode);
 
                 using (var xmlWriter = new XmlTextWriter(textWriter))
                 {
@@ -56,11 +54,11 @@ namespace RimXmlSettings
             }
         }
 
-        public static XmlSettings Deserialize(TextReader textReader)
+        public static PersistentXmlSettings Deserialize(TextReader textReader)
         {
             try
             {
-                XmlSettings xmlSettings = new XmlSettings();
+                PersistentXmlSettings xmlSettings = new PersistentXmlSettings();
                 var doc = new XmlDocument();
                 doc.Load(textReader);
                 var rootElement = doc.DocumentElement;
@@ -98,9 +96,6 @@ namespace RimXmlSettings
                 doc.Load(textReader);
                 var rootElement = doc.DocumentElement;
 
-                if (rootElement.Name != "ModSettings")
-                    throw new Exception("Invalid root element");
-
                 var modSettings = DeserializeModSettingsCore(rootElement);
 
                 return modSettings;
@@ -115,7 +110,7 @@ namespace RimXmlSettings
         {
             var modSettings = new XmlModSettings();
 
-            if (modNode.Name != "Mod")
+            if (modNode.Name != "ModSettings")
                 throw new Exception("Invalid node under ModSettings");
 
             var propertiesNode = modNode["Properties"];
@@ -132,43 +127,24 @@ namespace RimXmlSettings
             var propertyNode = doc.CreateElement("Property");
 
             propertyNode.SetAttribute("Key", key);
-            propertyNode.SetAttribute("Type", property.GetType().FullName);
 
-            const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.SetProperty;
-            foreach (var prop in property.GetType().GetProperties(flags))
-            {
-                var propNode = doc.CreateElement(prop.Name);
-
-                propNode.InnerText = prop.GetValue(property, new object[] { }).ToString();
-
-                propertyNode.AppendChild(propNode);
-            }
+            var valueNode = doc.CreateElement("Value");
+            valueNode.InnerText = property.Value;
+            propertyNode.AppendChild(valueNode);
 
             parentNode.AppendChild(propertyNode);
         }
 
         private static SettingsProperty ReadPropertyFromNode(XmlElement xmlElement)
         {
-            var propertyType = Assembly.GetExecutingAssembly().GetType(xmlElement.GetAttribute("Type"));
+            var valueNode = xmlElement["Value"];
 
-            var ctor = propertyType.GetConstructor(new Type[] { });
-            var property = (SettingsProperty)ctor.Invoke(new object[] { }) ;
+            if (valueNode == null)
+                throw new Exception("Value node is null");
 
-            const BindingFlags propFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.GetProperty;
-            foreach(var prop in propertyType.GetProperties(propFlags))
-            {
-                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string))
-                {
-                    var value = Convert.ChangeType(xmlElement[prop.Name].InnerText, prop.PropertyType);
-                    prop.SetValue(property, value, new object[] { });
-                }
-                else
-                {
-                    throw new ArgumentException("Cannot deserialize object with non-primitive properties");
-                }
-            }
+            var value = valueNode.InnerText;
 
-            return property;
+            return new SettingsProperty(value);
         }
     }
 }

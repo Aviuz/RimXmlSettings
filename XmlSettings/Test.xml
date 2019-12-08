@@ -1,0 +1,7 @@
+<ModSettings>
+	<Properties>
+		<Propsy Key="Helio" Type="RimXmlSettings.Elements.ToggleProperty">
+			<Value>True</Value>
+		</Propsy>
+	</Properties>
+</ModSettings>

@@ -1,12 +1,12 @@
 ﻿namespace RimXmlSettings.Elements
 {
-    public abstract class SettingsProperty
+    public class SettingsProperty
     {
-        public SettingsProperty(string key)
+        public SettingsProperty(string value)
         {
-            Key = key;
+            Value = value;
         }
 
-        public string Key { get; internal set; }
+        public string Value { get; set; }
     }
 }
